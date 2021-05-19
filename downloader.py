@@ -18,9 +18,9 @@ class VideoData():
                 line_striped=line.strip();
                 print(line_striped)
                 
-                train_url=self.url+line_striped
-                print(train_url)
-                r = requests.get(train_url, stream=True)
+                url_download=self.url+line_striped
+                print(url_download)
+                r = requests.get(url_download, stream=True)
 
                 with open("dataset/"+line_striped, "wb") as f:
                     for chunk in r.iter_content(chunk_size=chunk_size):
