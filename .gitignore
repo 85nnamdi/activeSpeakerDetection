@@ -8,8 +8,9 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+openpose/
 venv/
+.vscode/
 dataset/
 develop-eggs/
 dist/
