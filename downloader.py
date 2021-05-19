@@ -14,6 +14,7 @@ class VideoData():
         try:
             fileFromTxt = open(self.dataset, mode='r')
             Lines =fileFromTxt.readlines()
+            count = 0
             for line in Lines:
                 line_striped=line.strip();
                 print(line_striped)
@@ -25,6 +26,8 @@ class VideoData():
                 with open("dataset/"+line_striped, "wb") as f:
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
+                    count=count+1
+            print("Downloaded video: ", count)
         except OSError as error:
             print("Could not read file: {0}".format(error))
         except IOError as exc:
