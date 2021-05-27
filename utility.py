@@ -2,12 +2,16 @@ import json
 from datetime import datetime
 import numpy as np
 import cv2
+import pandas as pd
+import os
+import sys
 
 class Utilities():
-    # def __init__(self):
-        
+    def __init__(self):
+        self.path = os.path.dirname(os.path.realpath(__file__))
 
-    def readKeypoints(self):
+    def readKeypoints(self, path_to_keypoint):
+        data = path_to_keypoint
         data = "dataset\output_json_folder\youtube_000000000000_keypoints.json"
 
         with open(data,mode='r') as f:
@@ -37,5 +41,22 @@ class Utilities():
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame)
         print('Position:', float(capture.get(cv2.CAP_PROP_POS_FRAMES)))
         _, frame = capture.read()
+
         return frame
+
+    def saveFrame(self,video_name, csv_file):
+        #read the excel file
+        df = pd.read_csv(csv_file, header=None)
+
+        #loop through the column 1 to get the frame, pass it to the readVideoFrames
+        for i in df.index:
+            frame =df[1][i]
+            frame = readVideoFrames(video_name, frame)
+            
+            #Start saving the image
+            filename = df[0][i]+df[1][i]+"_.jpg" #the combine the first and second column to makeup the filename
+            cv2.imwrite(filename, frame)
+        
+            
+
 

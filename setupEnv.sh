@@ -7,7 +7,7 @@ pip install pandas
 pip install tensorflow
 pip install keras
 pip install requests
-pip install 
+pip install opencv-contrib-python
 
 read name
 echo "Hello $name"
