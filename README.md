@@ -20,5 +20,6 @@ Active speaker detection is a very important aspects of Human-Robot interaction.
 
 # Cite
 [Content loading]
+Special thanks to [OpenPose 1.6] (https://github.com/CMU-Perceptual-Computing-Lab/openpose/releases/tag/v1.6.0).
 
 
