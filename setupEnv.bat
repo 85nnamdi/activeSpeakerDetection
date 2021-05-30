@@ -1,5 +1,4 @@
-#Python -m venv venv pytorch=1.3.0 torchvision python=3.7 -y
-#pip uninstall Pillow
+Python -m venv venv pytorch=1.3.0 torchvision python=3.7 -y
 
 .\\venv\\Scripts\\activate
 
@@ -8,6 +7,7 @@ pip install tensorflow
 pip install keras
 pip install requests
 pip install opencv-contrib-python
+pip install Pillow
 
 read name
 echo "Hello $name"
