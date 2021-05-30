@@ -38,11 +38,10 @@ class Utilities():
         #Open the video file
         capture = cv2.VideoCapture(self.video_name)
         total_frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        #print('Frame count:', total_frame_count)
         
         #Jump to specific frames
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame)
-        #print('Position:', float(capture.get(cv2.CAP_PROP_POS_FRAMES)))
+
         _, frame = capture.read()
 
         return frame
@@ -69,8 +68,7 @@ class Utilities():
         oppath ="openpose/"
         os.chdir(oppath)
         #get the current path
-        currentPath = os.getcwd() #os.path.dirname(os.path.realpath(__file__)
-        #commandLine = shlex.split("./bin/OpenPoseDemo.exe --number_people_max 3 --disable_blending 0 --image_dir ../dataset/videoFrames/ --face --hand --write_json ../dataset/output_May281/ --net_resolution 320x176")
+        currentPath = os.getcwd() 
         
         commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir ../dataset/videoFrames/ --face --hand --write_json ../dataset/output_May282/ --net_resolution 320x176")
         process = subprocess.call(commandLine)
