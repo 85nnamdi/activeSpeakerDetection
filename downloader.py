@@ -18,10 +18,10 @@ class VideoData():
             count = 0
             for line in Lines:
                 line_striped=line.strip();
-                print(line_striped)
+                print('Downloading: ',line_striped)
                 
                 url_download=self.url+line_striped
-                print(url_download)
+                
                 r = requests.get(url_download, stream=True)
 
                 with open("dataset/"+line_striped, "wb") as f:

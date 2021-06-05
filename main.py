@@ -6,33 +6,28 @@ import cv2
 Base_train_url ="https://s3.amazonaws.com/ava-dataset/trainval/"
 #Base_test_url ="https://s3.amazonaws.com/ava-dataset/test/"
 dataset = "dataset/sampleData.txt"
-videoFile = "dataset/2bxKkUgcqpk.mp4"
+videoFile = "dataset/4gVsDd8PV9U.mp4"
 DataPath = "dataset/"
-excelPath = "dataset/2bxKkUgcqpk-activespeaker.csv"
-
+csvPath = "dataset/4gVsDd8PV9U-activespeaker.csv"
 
 
 def main():
     
-    #Download videos
+    # 1 Download videos
     # insr = VideoData(dataset, Base_train_url)
     # insr.download()
 
-    # read video frames
+    # 2 Save video frames
     util = Utilities()
-    util.readKeypoints(excelPath)
-    # frame = 1380.64
-    # id = util.readVideoFrames(videoFile, frame)
-    # cv2.imshow('Frame number',id)
-    # cv2.waitKey()
-    # cv2.destroyAllWindows()
-    
-    # df = util.readExcel(excelPath) 
-    # for i in df.index:
-    #     print(df[1][i])
+    #util.saveFrame(videoFile, csvPath)
 
-    #util.saveFrame(videoFile, excelPath)
-    #util.callOpenPose()
+    # 3 Save keypoint using openpose
+    # util.callOpenPose()
+
+    # 4 Read all the saved keypoints
+    util.readKeypoints(csvPath)
+    
+    
 
 if __name__ == '__main__':
     main()
