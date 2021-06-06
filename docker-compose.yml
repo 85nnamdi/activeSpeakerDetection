@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  activespeakerdetection:
+    image: activespeakerdetection
+    build:
+      context: .
+      dockerfile: ./Dockerfile
