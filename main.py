@@ -1,6 +1,7 @@
 from downloader import  VideoData
 from utility import Utilities
 import cv2
+from time import perf_counter 
 
 # Paths to training and test data
 Base_train_url ="https://s3.amazonaws.com/ava-dataset/trainval/"
@@ -10,9 +11,8 @@ videoFile = "dataset/4gVsDd8PV9U.mp4"
 DataPath = "dataset/"
 csvPath = "dataset/4gVsDd8PV9U-activespeaker.csv"
 
-
 def main():
-    
+
     # 1 Download videos
     # insr = VideoData(dataset, Base_train_url)
     # insr.download()
@@ -30,4 +30,8 @@ def main():
     
 
 if __name__ == '__main__':
+    start = perf_counter()
     main()
+    end = perf_counter()
+    print ('Total processing time : ',end - start)
+    

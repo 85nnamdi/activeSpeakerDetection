@@ -7,7 +7,6 @@ import os
 import sys
 import subprocess
 import shlex
-
 '''
 Initial pose constants
 '''
@@ -24,6 +23,7 @@ class Utilities():
     '''
     This function is responsible for processing all the keypoints that were saved in a directory
     '''
+    
     def readKeypoints(self, path_to_keypoint):
         data = path_to_keypoint
         data = "dataset\\output_May282\\2bxKkUgcqpk910.15__keypoints.json"
@@ -53,6 +53,7 @@ class Utilities():
     '''
     Given a frame number, this function returns frames from the video
     '''
+    
     def readVideoFrames(self, video_name, frame):
         self.video_name = video_name
         #Open the video file
