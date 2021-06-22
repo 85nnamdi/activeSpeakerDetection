@@ -15,55 +15,63 @@ EYES = [36,37,38,39,40,41,68, 42,43,44,45,46,47,69]
 MOUTH = [48,54,60,61,62,63,64,65,66,67]
 FACE = [EYES, MOUTH]
 FACE = [i for subi in FACE for i in subi]
-
+newcsvPath = "D:\\Users\\Nnamdi\\University of Hamburg\\SoSe2021\\Thesis\\activeSpeakerDetection\\dataset\\Demo.csv"
 class Utilities():
     def __init__(self):
         self.path = os.path.dirname(os.path.realpath(__file__))
 
+
     '''
     This function is responsible for processing all the keypoints that were saved in a directory
     '''
-    
-    def readKeypoints(self, path_to_keypoint):
-        data = path_to_keypoint
-        data = "dataset\\output_May282\\2bxKkUgcqpk910.15__keypoints.json"
+    def readKeypoints(self,csvfile, path_to_json):
+        df = pd.read_csv(csvfile, header=None)
+        col_begin = len(df.columns)
+        df[col_begin] = np.nan
+        df[col_begin+1] = np.nan
 
         person_count = 0
         poseList=[]
         faceList = []
-        with open(data,mode='r') as f:
+        with open(path_to_json,mode='r') as f:
             data_dict = json.load(f)
-            for x in data_dict['people']:
+            for k, v in enumerate(data_dict['people']):
                 #how many person in this keypoints
-                if x['person_id']:
+                if v['person_id']:
                     person_count += 1 
-                    pose = x['pose_keypoints_2d']
+                    pose = v['pose_keypoints_2d']
                     for i in POSE:
                         poseList.append(pose[i*3]), poseList.append(pose[(i*3)+1])
-                    face=x['face_keypoints_2d']
+                    face=v['face_keypoints_2d']
                     for i in FACE:
                         faceList.append(face[i*3]), faceList.append(face[i*3+1])
-                    handL=x['hand_left_keypoints_2d']
-                    handR=x['hand_right_keypoints_2d']
-                print(poseList)
+                    handL=v['hand_left_keypoints_2d']
+                    handR=v['hand_right_keypoints_2d']
+                #print(poseList)
+
+                df.iloc[k, col_begin] = str(poseList)
+                df.iloc[k, col_begin+1] = str(faceList)
+        
                 del poseList[:]
+        df.to_csv(newcsvPath)
                     #print(f'Person: {person_count}\n\n {pose} \n\n')
         
 
     '''
     Given a frame number, this function returns frames from the video
     '''
-    
     def readVideoFrames(self, video_name, frame):
         self.video_name = video_name
         #Open the video file
         capture = cv2.VideoCapture(self.video_name)
-        total_frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        #total_frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         
         #Jump to specific frames
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame)
         _, frame = capture.read()
 
+        capture.release()
+        cv2.destroyAllWindows()
         return frame
 
     '''
@@ -84,6 +92,8 @@ class Utilities():
             os.mkdir(path_to_savedFrame)
         else: path_to_savedFrame ="dataset/videoFrames/"
 
+        # var to track duplicate files
+        dublicate =0
         #loop through the column 1 to get the frame, pass it to the readVideoFrames
         for i in df.index:
             frameTime =df[1][i]
@@ -94,22 +104,24 @@ class Utilities():
             full_filename_path = os.path.join(self.path, path_to_savedFrame, filename)
             if not os.path.exists(full_filename_path):
                 cv2.imwrite(full_filename_path, frame)
+                dublicate=0
             else:
+                dublicate=dublicate+1
                 # change the file name
-                cv2.imwrite(os.path.join(self.path, path_to_savedFrame, str(df[0][i])+str(df[1][i])+'_'+str(i)+extension), frame)
+                cv2.imwrite(os.path.join(self.path, path_to_savedFrame, str(df[0][i])+str(df[1][i])+'_'+str(dublicate)+extension), frame)
             counter=counter+1
             print("saved frames: ", counter)
 
     '''
     Function to call open pose.exe from located in ./openpose/bin and passing all the required parameters along
     '''
-    def callOpenPose(self, path_to_keypoint="../dataset/videoFrames/"):
+    def callOpenPose(self, frames_path="../dataset/videoFrames/new/"):
         oppath ="openpose/"
         os.chdir(oppath)
         #get the current path
         currentPath = os.getcwd() 
         
-        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+path_to_keypoint+" --face --hand --write_json ../dataset/output_May282/ --net_resolution 320x176")
+        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+frames_path+" --face --hand --write_json ../dataset/output_June22/ --net_resolution 320x176")
         process = subprocess.call(commandLine)
 
         print(currentPath)
@@ -118,7 +130,7 @@ class Utilities():
     '''
     function to return the entire files in a folder
     '''
-    def readDir(self, basePath="dataset/", fileExtention='.json'):
+    def readDir(self, basePath="dataset/output_June20/", fileExtention='.json'):
         os.chdir(basePath)
         path =  os.getcwd() 
         files = []

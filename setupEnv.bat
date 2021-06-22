@@ -1,4 +1,4 @@
-Python -m venv venv pytorch=1.3.0 torchvision python=3.7 -y
+Python -m venv venv pytorch=1.3.0 torchvision python=3.9
 
 .\\venv\\Scripts\\activate
 
