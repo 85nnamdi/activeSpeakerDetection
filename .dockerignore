@@ -3,6 +3,8 @@
 **/.dockerignore
 **/.env
 **/.venv
+**/.dataset
+**/.openpose
 **/.git
 **/.gitignore
 **/.project

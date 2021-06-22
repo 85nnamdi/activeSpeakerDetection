@@ -2,14 +2,18 @@ from downloader import  VideoData
 from utility import Utilities
 import cv2
 from time import perf_counter 
+import concurrent.futures
+import asyncio
 
 # Paths to training and test data
 Base_train_url ="https://s3.amazonaws.com/ava-dataset/trainval/"
 #Base_test_url ="https://s3.amazonaws.com/ava-dataset/test/"
 dataset = "dataset/sampleData.txt"
-videoFile = "dataset/4gVsDd8PV9U.mp4"
+videoFile = "dataset/-5KQ66BBWC4.mkv"
 DataPath = "dataset/"
-csvPath = "dataset/4gVsDd8PV9U-activespeaker.csv"
+csvPath = "D:\\Users\\Nnamdi\\University of Hamburg\\SoSe2021\\Thesis\\activeSpeakerDetection\\dataset\\4gVsDd8PV9U-activespeakerDemo.csv"
+jsonPath = "dataset/"
+
 
 def main():
 
@@ -19,14 +23,26 @@ def main():
 
     # 2 Save video frames
     util = Utilities()
-    #util.saveFrame(videoFile, csvPath)
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     executor.submit(util.saveFrame,videoFile,csvPath) #imag
+        #util.saveFrame(videoFile, csvPath)
 
     # 3 Save keypoint using openpose
-    # util.callOpenPose()
+    util.callOpenPose()
 
     # 4 Read all the saved keypoints
-    util.readKeypoints(csvPath)
-    
+    # for i in util.readDir("dataset/output_June20/"):
+    #     util.readKeypoints(csvPath,i)
+
+    #process all the keypoint.json file
+    # counter = 0
+    # for i in util.readDir():
+    #     print("==========Printing===========\n")
+    #     print(i)
+    #     util.readKeypoints(i)
+    #     counter=counter+1
+        
+    #     print(f"There are {counter} keyframes ")
     
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 import requests
 import sys
-
+import concurrent.futures
 
 class VideoData():
     def __init__(self,  dataset, url):
@@ -11,7 +11,7 @@ class VideoData():
     def download(self):
         chunk_size =256
 
-        #read the text file to find filename which has to be downloaded
+        # Read the text file to find filename which has to be downloaded
         try:
             fileFromTxt = open(self.dataset, mode='r')
             Lines =fileFromTxt.readlines()
@@ -28,6 +28,8 @@ class VideoData():
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                     count=count+1
+                    
+
             print("Downloaded video: ", count)
         except OSError as error:
             print("Could not read file: {0}".format(error))
