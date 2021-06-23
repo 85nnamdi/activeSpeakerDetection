@@ -7,8 +7,8 @@ Active speaker detection is a very important aspects of Human-Robot interaction.
 - this project uses [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) to estimate human pose and saves the keypoints in json format.
 
 # Setup
-- git clone [this repo]
-- run setup.sh to install neccessary dependencies
+- git clone https://github.com/85nnamdi/activeSpeakerDetection.git
+- pip install -r requirements.txt
 - Download and extract [OpenPose 1.6](https://github.com/CMU-Perceptual-Computing-Lab/openpose/releases/tag/v1.6.0) into the project root.
 
 # Demo 
