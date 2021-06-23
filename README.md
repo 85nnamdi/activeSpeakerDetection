@@ -9,7 +9,7 @@ Active speaker detection is a very important aspects of Human-Robot interaction.
 # Setup
 - git clone [this repo]
 - run setup.sh to install neccessary dependencies
-- Download and extract [OpenPose 1.6] (https://github.com/CMU-Perceptual-Computing-Lab/openpose/releases/tag/v1.6.0) into the project root.
+- Download and extract [OpenPose 1.6](https://github.com/CMU-Perceptual-Computing-Lab/openpose/releases/tag/v1.6.0) into the project root.
 - 
 
 # Demo 
