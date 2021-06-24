@@ -1,1 +1,5 @@
 Does the pose pose of a speaker contribute the identification as speaker?
+1. crop the bounding box to select the active speaker and then compute openpose based on the cropped image
+2. Read the entire frame, compute openpose and use the bounding box information to extract the active speaker
+
+compare 1 and 2

@@ -115,13 +115,13 @@ class Utilities():
     '''
     Function to call open pose.exe from located in ./openpose/bin and passing all the required parameters along
     '''
-    def callOpenPose(self, frames_path="../dataset/videoFrames/new/"):
+    def callOpenPose(self, frames_path="../dataset/videoFrames/new/", output_path="../dataset/Json/"):
         oppath ="openpose/"
         os.chdir(oppath)
         #get the current path
         currentPath = os.getcwd() 
         
-        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+frames_path+" --face --hand --write_json ../dataset/output_June22/ --net_resolution 320x176")
+        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+frames_path+" --face --hand --write_json "+ output_path+" --net_resolution 320x176")
         process = subprocess.call(commandLine)
 
         print(currentPath)
