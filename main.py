@@ -1,5 +1,5 @@
-from downloader import  VideoData
-from utility import Utilities
+from data_preparation.downloader import  VideoData
+from data_preparation.utility import Utilities
 import cv2
 from time import perf_counter 
 import concurrent.futures
