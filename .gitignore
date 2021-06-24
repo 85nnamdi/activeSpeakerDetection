@@ -3,17 +3,21 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
+# Demo codes
 demo.py
 
-# Distribution / packaging
-.Python
+# Folders during development
 openpose/
 data_preparation/__pycache__/
 venv/
-.vscode/
 dataset/
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+.vscode/
 develop-eggs/
 dist/
 downloads/
