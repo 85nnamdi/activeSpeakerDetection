@@ -10,6 +10,7 @@ demo.py
 # Distribution / packaging
 .Python
 openpose/
+data_preparation/__pycache__/
 venv/
 .vscode/
 dataset/
