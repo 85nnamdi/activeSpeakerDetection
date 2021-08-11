@@ -24,7 +24,7 @@ class VideoData():
                 
                 r = requests.get(url_download, stream=True)
 
-                with open("dataset/"+line_striped, "wb") as f:
+                with open("dataset/videos/"+line_striped, "wb") as f:
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                     count=count+1
