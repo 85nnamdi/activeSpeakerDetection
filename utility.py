@@ -26,9 +26,37 @@ class Utilities():
 
     '''
     This function is responsible for processing all the keypoints that were saved in a directory
-    
+    Reads keypoints from each person to a separate list which is combined in the end
     '''
     def readKeypoints(self,pathToJsonFile):
+        '''
+        the row is the position where value should be writen in csv
+        '''
+        poseListsList =[]
+        faceListsList =[]
+        with open(pathToJsonFile,mode='r') as f:
+            data_dict = json.load(f)
+            for k, v in enumerate(data_dict['people']):
+                if v['person_id']:
+                    poseList=[]
+                    pose = v['pose_keypoints_2d']
+                    for i in POSE:
+                        poseList.append(pose[i*3]), poseList.append(pose[(i*3)+1])
+                    faceList = []
+                    face=v['face_keypoints_2d']
+                    for i in FACE:
+                        faceList.append(face[i*3]), faceList.append(face[i*3+1])
+                poseListsList.append(poseList[:])
+                faceListsList.append(faceList[:])
+                faceListsList
+            return poseListsList, faceListsList
+
+
+    '''
+    reads all keypoints into a single list
+    
+    '''
+    def readKeypoints2(self,pathToJsonFile):
         '''
         the row is the position where value should be writen in csv
         '''
@@ -45,32 +73,58 @@ class Utilities():
                     faceList.append(face[i*3]), faceList.append(face[i*3+1])
                 
         return poseList, faceList
-    
+
+     
+
     '''
     Use this function to fill all CSVs with keypoints
     '''
-    def keyPointToCSV(self, csvDir='dataset/csv/', jsonDir='dataset/Json/'):
+    def keyPointToCSV(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/'):
+        rootPath = os.getcwd()
         # For each CSV file in this folder loop
-        for allCsvPath in readDir(basePath=csvDir, fileExtention='.csv'):
-            csv_row = 0
-            
-            # open csv
-            df = pd.read_csv(allCsvPath, header=None)
-            col_begin = len(df.columns)
-            df[col_begin] = np.nan
-            df[col_begin+1] = np.nan
+        list_csv  = self.readFiles(basePath = csvDir, fileExtention='.csv')
+        os.chdir(rootPath)
+        root_json_dir = self.readDir(jsonDir)
+        for each_json_dir in root_json_dir[0]:
+            readJsonPath = os.path.join(jsonDir, each_json_dir)
+            for each_csv_file in list_csv:
+                csv_row = 0
+                if each_json_dir in each_csv_file:
+                    # open csv
+                    print(f'Currently processing {each_csv_file}')
+                    df = pd.read_csv(each_csv_file, header=None)
+                    df.sort_values(1, ascending=True, inplace=True) 
+                    col_begin = len(df.columns)
+                    df[col_begin] = np.nan
+                    df[col_begin+1] = np.nan
+                    allJson = self.readFiles(basePath=readJsonPath, fileExtention='.json')
+                    os.chdir(rootPath)
+                    for eachJson in allJson:
+                        os.chdir(rootPath)
+                        pose, face = self.readKeypoints(eachJson)
+                        
+                        # jump to specific row and col to enter the pose and face
+                        df.iloc[csv_row, col_begin] = str(pose)
+                        df.iloc[csv_row, col_begin+1] = str(face)
+                        
+                        # save and repeat
+                        csv_row = csv_row+1
+                    df.to_csv(each_csv_file, index=False,  header=False)
 
-            # loop through each json folder
-            for json in readDir(basePath=jsonDir, fileExtention='.json'):
-                pose, face = readKeypoints(json)
+    '''
+    A second function to fill csvs with keypoints values
+    '''
+    def CSVfiller(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/'):
+        rootPath = os.getcwd()
+        # For each CSV file in this folder loop
+        list_csv  = self.readFiles(basePath = csvDir, fileExtention='.csv')
+        os.chdir(rootPath)
+        list_json_dir = self.readDir(jsonDir)
 
-                # jump to specific row and col to enter the pose and face
-                df.iloc[csv_row, col_begin] = str(pose)
-                df.iloc[csv_row, col_begin+1] = str(face)
-                
-                # save and repeat
-                df.to_csv(allCsvPath, index=False,  header=False)
-                csv_row = csv_row+1
+        for each_json_dir in list_json_dir[0]:
+            for each_csv_file in list_csv:
+                if each_json_dir in each_csv_file:
+                    print('')
 
     '''
     Given a frame number, this function returns frames from the video
@@ -91,10 +145,9 @@ class Utilities():
         return frame,width,height
 
     '''
-    This function reads a csv files, extracts frame number, passes the number to the readVideoFrames fucntions
-    and saves the returned frame as image default is jpg
+    Saves the cropped image
     '''
-    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/', extension='.jpg'):
+    def saveFrame2(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/', extension='.jpg'):
         # read the excel file
         df = pd.read_csv(csv_file, header=None)
 
@@ -136,8 +189,12 @@ class Utilities():
                 cv2.imwrite(os.path.join(self.path, path_to_savedFrame, str(df[0][i])+str(df[1][i])+str(dublicate)+extension), cropped_frame)
             counter=counter+1
         print('saved frames: ', counter)
-            
-    def saveFrame2(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/', extension='.jpg'):
+
+    '''
+    This function reads a csv files, extracts frame number, passes the number to the readVideoFrames fucntions
+    and saves the returned frame as image.jpg
+    '''        
+    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/', extension='.jpg'):
         # read the excel file
         df = pd.read_csv(csv_file, header=None)
 
@@ -193,7 +250,7 @@ class Utilities():
     function to return the entire files in a folder
     '''
     def readFiles(self, basePath="dataset/output_June20/", fileExtention='.*'):
-        oldpath = os.getcwd()
+        
         os.chdir(basePath)
         path =  os.getcwd() 
         files = []
@@ -205,7 +262,7 @@ class Utilities():
         
         # Get list of all files in a given directory sorted by name
         list_of_files = sorted(files)
-        return oldpath, list_of_files
+        return list_of_files
 
     def readDir(self, basePath):
         return [x[1] for x in os.walk(basePath)]
