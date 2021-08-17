@@ -12,13 +12,11 @@ import shlex
 '''
 Initial pose constants
 '''
-POSE = [0,1,2,3,4,5,6,7,15,16,17,18]
+POSE = [0,1,2,3,4,5,6,7,8,15,16,17,18]
 EYES = [36,37,38,39,40,41,68, 42,43,44,45,46,47,69]
 MOUTH = [48,54,60,61,62,63,64,65,66,67]
 FACE = [EYES, MOUTH]
 FACE = [i for subi in FACE for i in subi]
-newcsvPath = "D:\\Users\\Nnamdi\\University of Hamburg\\SoSe2021\\Thesis\\activeSpeakerDetection\\dataset\\Demo.csv"
-
 
 class Utilities():
     def __init__(self):
@@ -137,12 +135,12 @@ class Utilities():
         #Jump to specific frames
         capture.set(cv2.CAP_PROP_POS_FRAMES, frameNumber)
         _, frame = capture.read()
-        width =capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-        height=capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        # width =capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        # height=capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         capture.release()
         cv2.destroyAllWindows()
-        return frame,width,height
+        return frame
 
     '''
     Saves the cropped image
@@ -200,7 +198,6 @@ class Utilities():
 
         # Sort the second column in ascending order
         df.sort_values(1, ascending=True, inplace=True) 
-        counter=0
         path_to_savedFrame = path_to_savedFrame +df[0][0]
 
         # check if folder exist and create it
@@ -213,19 +210,18 @@ class Utilities():
         for i in df.index:
             frameTime =df[1][i]
             frame = self.readVideoFrames(video_name, frameTime)
-            
+
             # Start saving the image
             filename = str(df[0][i])+str(df[1][i])+extension #combine the first and second column to makeup the filename
             full_filename_path = os.path.join(self.path, path_to_savedFrame, filename)
             if not os.path.exists(full_filename_path):
-                cv2.imwrite(full_filename_path, frame)
+                cv2.imwrite(str(full_filename_path), frame)
                 dublicate=0
             else:
                 dublicate=dublicate+1
                 # change the file name
-                cv2.imwrite(os.path.join(self.path, path_to_savedFrame, str(df[0][i])+str(df[1][i])+str(dublicate)+extension), frame)
-            counter=counter+1
-            print('saved frames: ', counter)
+                cv2.imwrite(str(os.path.join(self.path, path_to_savedFrame, str(df[0][i])+str(df[1][i])+str(dublicate)+extension)), frame)
+           
 
     '''
     Function to call open pose.exe from located in ./openpose/bin and passing all the required parameters along
