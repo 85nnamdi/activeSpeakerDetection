@@ -1,3 +1,4 @@
+import cv2
 import os
 import pandas as pd
 import numpy as np
@@ -5,7 +6,7 @@ from time import perf_counter
 import concurrent.futures
 from data_preparation.downloader import  VideoData
 from utility import Utilities
-
+from verstack import Multicore
 
 # Paths to training and test data
 Base_train_url ='https://s3.amazonaws.com/ava-dataset/trainval/'
@@ -34,19 +35,26 @@ def main():
     #         a_csv_file = os.path.basename(each_csv_file).split('.', 1)[0]
     #         if a_vid_file in a_csv_file:
     #             os.chdir(rootPath)
-    #             with concurrent.futures.ProcessPoolExecutor() as executor:
-    #                 executor.submit(util.saveFrame, each_video_file, each_csv_file)
+    #             util.saveFrame(each_video_file, each_csv_file)
+                # worker = Multicore()
+                # worker.execute(util.saveFrame, each_video_file, each_csv_file)
+                # with concurrent.futures.ProcessPoolExecutor() as executor:
+                #     executor.submit(util.saveFrame, each_video_file, each_csv_file)
 
-    # # 3 Save keypoint using openpose
-    # dirpath = 'dataset/frames/'
-    # dir = util.readDir(dirpath)
-    # for d in dir[0]:
-    #     framePath = os.path.join(dirpath,d)
-    #     output_path =d
-    #     with concurrent.futures.ProcessPoolExecutor() as executor:
-    #         executor.submit(util.callOpenPose, frames_path ='../'+framePath, output_path='../dataset/json/'+output_path)
+    # 3 Save keypoint using openpose
+    dirpath = 'dataset/frames/'
+    dir = util.readDir(dirpath)
+    for d in dir[0]:
+        framePath = os.path.join(dirpath,d)
+        output_path =d
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            executor.submit(util.callOpenPose, frames_path ='../'+framePath, output_path='../dataset/json/'+output_path)
 
-    util.keyPointToCSV(csvDir=csvDir, jsonDir=jsonPath)
+    # # Save the video dimensions
+    # util.save_width_height(csvDir, videos)
+    # # 4. keypoints to CSV
+    # #util.keyPointToCSV(csvDir=csvDir, jsonDir=jsonPath)
+
 
 if __name__ == '__main__':
     start = perf_counter()

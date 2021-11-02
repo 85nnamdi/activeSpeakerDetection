@@ -26,7 +26,7 @@ class Utilities():
     This function is responsible for processing all the keypoints that were saved in a directory
     Reads keypoints from each person to a separate list which is combined in the end
     '''
-    def readKeypoints(self,pathToJsonFile):
+    def readKeypoints(self,pathToJsonFile) -> tuple:
         '''
         the row is the position where value should be writen in csv
         '''
@@ -100,47 +100,67 @@ class Utilities():
                     for eachJson in allJson:
                         os.chdir(rootPath)
                         pose, face = self.readKeypoints(eachJson)
-                        
                         # jump to specific row and col to enter the pose and face
-                        df.iloc[csv_row, col_begin] = str(pose)
-                        df.iloc[csv_row, col_begin+1] = str(face)
+                        df.iloc[csv_row, col_begin] = pd.DataFrame([pose]) #str(pose)
+                        df.iloc[csv_row, col_begin+1] = pd.DataFrame([face]) #str(face)
                         
                         # save and repeat
                         csv_row = csv_row+1
                     df.to_csv(each_csv_file, index=False,  header=False)
 
-    '''
-    A second function to fill csvs with keypoints values
-    '''
-    def CSVfiller(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/'):
-        rootPath = os.getcwd()
-        # For each CSV file in this folder loop
-        list_csv  = self.readFiles(basePath = csvDir, fileExtention='.csv')
-        os.chdir(rootPath)
-        list_json_dir = self.readDir(jsonDir)
-
-        for each_json_dir in list_json_dir[0]:
-            for each_csv_file in list_csv:
-                if each_json_dir in each_csv_file:
-                    print('')
 
     '''
     Given a frame number, this function returns frames from the video
     '''
-    def readVideoFrames(self, video_name, frameNumber):
+    def readVideoFrames(self, video_name, frameNumber=900):
         #Open the video file
         capture = cv2.VideoCapture(video_name)
         #total_frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         
         #Jump to specific frames
-        capture.set(cv2.CAP_PROP_POS_FRAMES, frameNumber)
+        capture.set(cv2.CAP_PROP_POS_MSEC, (frameNumber*1000))
         _, frame = capture.read()
-        # width =capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-        # height=capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        width =capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height=capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         capture.release()
         cv2.destroyAllWindows()
-        return frame
+        return  frame, width, height
+    
+    '''
+    Function to populate the CSV with video width and height
+    '''
+    def save_width_height(self, csv_path, video_path):
+        rootPath = os.getcwd()
+        # Open video dir
+        list_video  = self.readFiles(basePath = video_path, fileExtention='.*')
+        os.chdir(rootPath)
+        list_csv = self.readFiles(basePath = csv_path, fileExtention='.csv')
+
+        for each_video in list_video:
+            csv_row = 0
+            for each_csv_file in list_csv:
+                if os.path.basename(each_video).split('.')[0] in each_csv_file:
+                    print(f'Processing: {each_csv_file}')
+                    # open csv
+                    df = pd.read_csv(each_csv_file, header=None)
+                    df.sort_values(1, ascending=True, inplace=True) 
+                    
+                    # read get the frame and dimension
+                    _, width, height = self.readVideoFrames(each_video)
+                    col_begin = len(df.columns)
+                    df[col_begin] = np.nan
+                    df[col_begin+1] = np.nan
+                    for i in df.index:
+                        # jump to specific row and col to enter the pose and face
+                        df.iloc[i, col_begin] = width
+                        df.iloc[i, col_begin+1] = height
+                            
+                        # # save and repeat
+                        # csv_row = csv_row+1
+                    df.to_csv(each_csv_file, index=False,  header=False)
+
+
 
     '''
     Saves the cropped image
@@ -209,8 +229,8 @@ class Utilities():
         # loop through the column 1 to get the frame, pass it to the readVideoFrames
         for i in df.index:
             frameTime =df[1][i]
-            frame = self.readVideoFrames(video_name, frameTime)
-
+            frame,_,_ = self.readVideoFrames(video_name, frameTime)
+            
             # Start saving the image
             filename = str(df[0][i])+str(df[1][i])+extension #combine the first and second column to makeup the filename
             full_filename_path = os.path.join(self.path, path_to_savedFrame, filename)
@@ -235,7 +255,7 @@ class Utilities():
         if not os.path.exists(output_path):
             os.mkdir(output_path)
 
-        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+frames_path+" --face --hand --write_json "+ output_path+" --net_resolution 320x176")
+        commandLine = shlex.split("./bin/OpenPoseDemo.exe --disable_blending 0 --image_dir "+frames_path+" --face --hand --write_json "+ output_path+" )# --net_resolution 320x176")
         process = subprocess.call(commandLine)
 
         print(currentPath)
