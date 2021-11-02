@@ -1,0 +1,25 @@
+Does the pose pose of a speaker contribute the identification as speaker?
+1. crop the bounding box to select the active speaker and then compute openpose based on the cropped image
+2. Read the entire frame, compute openpose and use the bounding box information to extract the active speaker
+
+compare 1 and 2
+
+17.08.2021
+- compute the eucledean distance bw one frame and the other
+- compute the eu................ bw keypoint 1 and 8 ( normalization regarding persion trunck)
+- we will keep the face keypoint in case we need more data later.
+
+Issues:
+1. The  bbox does not always intersect the region of interest (face) based on the coordinates from csv
+2. 
+
+Statistics:
+Counted: 17,781 None: 16,224
+
+12.10.2021
+the active speaker moves the upper body more than the non active speaker
+analysis of the frames with (trunk lenght or not) eg. 80% of the frames have no trunck lenght
+
+26.10.2021
+1. I have modified the initial way we save frames from videos by multiplying the frame_timestamp by 1000(milli seconds) and this gives the exact
+reference frame.
