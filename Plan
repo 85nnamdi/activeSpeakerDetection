@@ -23,3 +23,10 @@ analysis of the frames with (trunk lenght or not) eg. 80% of the frames have no 
 26.10.2021
 1. I have modified the initial way we save frames from videos by multiplying the frame_timestamp by 1000(milli seconds) and this gives the exact
 reference frame.
+
+02.11.2021
+The Euclideanc distance alone is not enough for the measuing how much a person moves
+therefore, we propose using a cosin measre to measure the angular distance
+
+instead of musing the ed
+we calculate the diff the pos one frame and another frame
