@@ -1,12 +1,15 @@
 import os,sys
+import cv2
 from math import*
 from time import perf_counter
 import pandas as pd
 import numpy as np
 import csv
+from scipy import spatial # consider remove
+from sklearn.metrics.pairwise import cosine_similarity # currently used
 from utility import Utilities
-import time
-import cv2
+
+
 
 class distance_measure():
     def __init__(self):
@@ -27,6 +30,8 @@ class distance_measure():
             except TypeError:
                 return sqrt( pow(x-y,2) )
     
+    def cosine_similarity(self, x, y):
+        return self
 
     '''
     Use this function returns the pose keypoints from JSON Dir
@@ -97,33 +102,24 @@ class distance_measure():
                             if(displayFrame):
                                 imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2), int(y2)), (0,255,0),2)
                                 
-                                cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[2][0]), int(ckeys[2][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[3][0]), int(ckeys[3][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[4][0]), int(ckeys[4][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[5][0]), int(ckeys[5][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[6][0]), int(ckeys[6][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[7][0]), int(ckeys[7][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[8][0]), int(ckeys[8][1])),5, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),5, (0, 255, 0), cv2.FILLED)
+                                # Keypoints
+                                cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),3, (255, 0, 0), cv2.FILLED)
+                                cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),3, (0, 255, 0), cv2.FILLED)
+                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
+                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
+                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
+                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
 
-
-                                self.POSECOORDS = [0,1,2,3,4,5,6,7,8,15,16,17,18]
-                                cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[11][0]), int(ckeys[11][1])),(0, 255, 255), 5)
-                                cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[12][0]), int(ckeys[12][1])),(0, 255, 255), 5)
-                                cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 5)
-                                cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 5)
-                                
-                                cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(0, 255, 255), 5)
-                                # cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[5][0]), int(ckeys[5][1])),(0, 255, 255), 5)
-                                # cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[4][0]), int(ckeys[4][1])),(0, 255, 255), 5)
-                                # cv2.line(frame, (int(ckeys[5][0]), int(ckeys[2][1])), (int(ckeys[7][0]), int(ckeys[7][1])),(0, 255, 255), 5)
-                                # cv2.line(frame, (int(ckeys[1][0]), int(ckeys[1][1])), (int(ckeys[8][0]), int(ckeys[8][1])),(0, 255, 255), 5)
+                                # Connect the dots
+                                cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(0, 255, 255), 2)
+                                cv2.line(frame, (int(ckeys[11][0]), int(ckeys[11][1])), (int(ckeys[9][0]), int(ckeys[9][1])),(0, 255, 255), 2)
+                                cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 2)
+                                cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 2)
+                                cv2.line(frame, (int(ckeys[12][0]), int(ckeys[12][1])), (int(ckeys[10][0]), int(ckeys[10][1])),(0, 255, 255), 2)
                                 
                                 cv2.imshow('Active speacker detection using pose estimation', imgbbox)
-                                #cv2.waitKey(1)
-                                if cv2.waitKey(1) == ord('s'):
+                                
+                                if cv2.waitKey(0) == ord('s'):
                                     
                                     fullpath = os.path.join(frameDir, 'samples', str(df[0][i])+str(df[1][i]) + '.jpg')
                                     cv2.imwrite(fullpath, imgbbox)
@@ -134,15 +130,37 @@ class distance_measure():
                             prevKey = ckeys
                             
                         distanc = self.euclidean_distance( prevKey, ckeys)
-                        prevKey = ckeys
-                        print(f'{i}: {distanc}')# \n\n Trunk: {trunc} \n\n Nose_Neck: {nose_neck}')
+                        #distanc = spatial.distance.euclidean(prevKey, ckeys)
 
+                        # a = self.flatten(prevKey)
+                        # b = self.flatten(ckeys)
+                        # print(a)
+                        # print('\n\n')
+                        # print(b)
+                        # similarity = spatial.distance.cosine(a, b)
+                        #similarity = cosine_similarity(prevKey, ckeys)
+                        
+                        chestNoseX = ckeys[0][0] - ckeys[1][0]# diff bw hpose of chest and hpose of the nose
+                        print(chestNoseX)
+                        # also ned the vpose of nose and chest
+                        chestNoseY = ckeys[0][1]-ckeys[1][1]
+
+                        chestRShoulderX = ckeys[2][0] - ckeys[1][0]
+                        chestRShoulderY = ckeys[2][1] - ckeys[1][1]
+
+                        # now time compute similatu
+                        similarity = cosine_similarity([chestNoseX, chestNoseY],[chestRShoulderX, chestRShoulderY])
+                        #nosechestRShoulder = cosine_similarity([ckeys[0],ckeys[1],ckeys[2]]) # compare similarity among these points
+                        #noseChestLShoulder = [0,1,5]
+
+                        
+
+                        prevKey = ckeys
+                        print(ckeys)
+                        print(f'Distance: {i}: {distanc} \n')# \n\n Trunk: {trunc} \n\n Nose_Neck: {nose_neck}')
+                        print(f'Similarity: {i}: {similarity} \n')
                 totalCount.append(f'File: {each_json_dir} Counted: {counter} None: {counter_none}')    
                 print(totalCount)
-
-    def get_upperbody(self):
-        print(f'upper body:')
-
 
 
     '''
@@ -192,7 +210,12 @@ class distance_measure():
                     
                     return  faceKeyPoint, trunck_length, nose_neck_length
         return [], [], []
-        
+
+    '''
+    LIST FLATTENER
+    '''
+    def flatten(self, list):
+        return [i for sub_i in list for i in sub_i]   
             
 if __name__ == '__main__':
     start = perf_counter()
