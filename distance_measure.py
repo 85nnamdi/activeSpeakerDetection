@@ -1,14 +1,17 @@
-import os,sys
-import cv2
-from math import*
-from time import perf_counter
-import pandas as pd
-import numpy as np
 import csv
-from scipy import spatial # consider remove
-from sklearn.metrics.pairwise import cosine_similarity # currently used
-from utility import Utilities
+import os
+import sys
+import time
+from math import *
+from time import perf_counter
 
+import cv2
+import numpy as np
+import pandas as pd
+from scipy import spatial  # consider remove
+from sklearn.metrics.pairwise import cosine_similarity  # currently used
+
+from utility import Utilities
 
 
 class distance_measure():
@@ -48,12 +51,13 @@ class distance_measure():
         counter_none =0
         for each_json_dir in root_json_dir[0]:
             readJsonPath = os.path.join(jsonDir, each_json_dir)
-            print(f'Old json: {readJsonPath}')
+           # print(f'Old json: {readJsonPath}')
             
             for each_csv_file in list_csv:
                 i = 0
+                pTime = 0
                 if each_json_dir in each_csv_file:
-                    print(f'JSON: {each_json_dir} CSV: {each_csv_file}')
+                   # print(f'JSON: {each_json_dir} CSV: {each_csv_file}')
                     
                     # open csv
                     df = pd.read_csv(each_csv_file, header=None)
@@ -65,9 +69,11 @@ class distance_measure():
                     os.chdir(rootPath)
                     prevKey =[]
                     totalCount=[]
-                    dublicate =0
+                    duplicate =0
                     for eachJson in allJson:
-                        poses, _face = self.util.readKeypoints(eachJson)
+                        json_filename = os.path.join(readJsonPath, str(df[0][i])+str(df[1][i])+'_keypoints.json') #2PpxiG0WU18900.1_keypoints
+                        ############################
+                        poses, _face = self.util.readKeypoints(json_filename)
                         x1, y1, x2, y2 = float(df[2][i])*width, float(df[3][i])*height, float(df[4][i])*width, float(df[5][i])*height                    
                         # x2 = x1+x2
                         # y2 = y1+y2
@@ -93,7 +99,7 @@ class distance_measure():
                         if ckeys==[]:
                             counter_none = counter_none+1
                             if(displayFrame):
-                                imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (255,0,0),5)
+                                imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (255,255,0),5)
                                
                             continue    
                         
@@ -102,24 +108,55 @@ class distance_measure():
                             if(displayFrame):
                                 imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2), int(y2)), (0,255,0),2)
                                 
-                                # Keypoints
-                                cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),3, (255, 0, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),3, (0, 255, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
-                                cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 100, 0), cv2.FILLED)
-
-                                # Connect the dots
-                                cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(0, 255, 255), 2)
-                                cv2.line(frame, (int(ckeys[11][0]), int(ckeys[11][1])), (int(ckeys[9][0]), int(ckeys[9][1])),(0, 255, 255), 2)
-                                cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 2)
-                                cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(0, 255, 255), 2)
-                                cv2.line(frame, (int(ckeys[12][0]), int(ckeys[12][1])), (int(ckeys[10][0]), int(ckeys[10][1])),(0, 255, 255), 2)
+                                if not (ckeys[0].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[1].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[9].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[10].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[10][0]), int(ckeys[10][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[2].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[2][0]), int(ckeys[2][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[5].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[5][0]), int(ckeys[5][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[4].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[4][0]), int(ckeys[4][1])),3, (255, 255, 0), cv2.FILLED)
+                                if not (ckeys[7].__contains__(0)):
+                                    cv2.circle(frame, (int(ckeys[7][0]), int(ckeys[7][1])),3, (255, 255, 0), cv2.FILLED)
+                                # if not (ckeys[6].__contains__(0)):
+                                #     cv2.circle(frame, (int(ckeys[6][0]), int(ckeys[6][1])),3, (255, 255, 0), cv2.FILLED)
+                                # if not (ckeys[3].__contains__(0)):
+                                #     cv2.circle(frame, (int(ckeys[3][0]), int(ckeys[3][1])),3, (255, 255, 0), cv2.FILLED)
                                 
+                                # Connect the dots
+                                if not (ckeys[0].__contains__(0) or ckeys[1].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(255, 100, 50), 2)
+                                if not (ckeys[11].__contains__(0) or ckeys[9].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[11][0]), int(ckeys[11][1])), (int(ckeys[9][0]), int(ckeys[9][1])),(255, 100, 50), 2)
+                                if not (ckeys[9].__contains__(0) or ckeys[0].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 2)
+                                if not (ckeys[10].__contains__(0) or ckeys[0].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 2)
+                                if not (ckeys[12].__contains__(0) or ckeys[10].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[12][0]), int(ckeys[12][1])), (int(ckeys[10][0]), int(ckeys[10][1])),(255, 100, 50), 2)
+                                if not (ckeys[2].__contains__(0) or ckeys[5].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[5][0]), int(ckeys[5][1])),(255, 100, 50), 2)
+                                if not (ckeys[2].__contains__(0) or ckeys[4].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[4][0]), int(ckeys[4][1])),(255, 100, 50), 2)
+                                if not (ckeys[5].__contains__(0) or ckeys[7].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[5][0]), int(ckeys[5][1])), (int(ckeys[7][0]), int(ckeys[7][1])),(255, 100, 50), 2)
+                                if not (ckeys[1].__contains__(0) or ckeys[8].__contains__(0)):
+                                    cv2.line(frame, (int(ckeys[1][0]), int(ckeys[1][1])), (int(ckeys[8][0]), int(ckeys[8][1])),(255, 100, 50), 2)
+                                
+
+                                cTime = time.time()
+                                fps = 1 / (cTime - pTime)
+                                pTime = cTime
+                                cv2.putText(imgbbox, "fps: "+str(int(fps)), (10, 50), cv2.FONT_HERSHEY_PLAIN, 1, (155, 200, 150), 2)
                                 cv2.imshow('Active speacker detection using pose estimation', imgbbox)
                                 
-                                if cv2.waitKey(0) == ord('s'):
+                                if cv2.waitKey(1) == ord('s'):
                                     
                                     fullpath = os.path.join(frameDir, 'samples', str(df[0][i])+str(df[1][i]) + '.jpg')
                                     cv2.imwrite(fullpath, imgbbox)
@@ -130,38 +167,117 @@ class distance_measure():
                             prevKey = ckeys
                             
                         distanc = self.euclidean_distance( prevKey, ckeys)
-                        #distanc = spatial.distance.euclidean(prevKey, ckeys)
 
-                        # a = self.flatten(prevKey)
-                        # b = self.flatten(ckeys)
-                        # print(a)
-                        # print('\n\n')
-                        # print(b)
-                        # similarity = spatial.distance.cosine(a, b)
-                        #similarity = cosine_similarity(prevKey, ckeys)
-                        
-                        chestNoseX = ckeys[0][0] - ckeys[1][0]# diff bw hpose of chest and hpose of the nose
-                        print(chestNoseX)
+                        # diff bw hpose of chest and hpose of the nose
                         # also ned the vpose of nose and chest
-                        chestNoseY = ckeys[0][1]-ckeys[1][1]
-
+                        '''
+                        sample cKey 
+                        [[349.893, 58.1082], [345.719, 95.0022], [316.998, 93.0292], 
+                        [304.644, 140.261], [335.41, 152.553], [372.445, 95.0825], 
+                        [395.077, 138.258], [372.507, 154.561], [345.772, 189.608], 
+                        [341.657, 55.9202], [353.923, 55.949], [333.435, 58.0131], 
+                        [360.168, 58.0754]]
+                        '''
+                        
+                        #Computation of joint angle 
+                        # 0-1-2 Nose Chest RShoulder
+                        noseChestX = ckeys[0][0] - ckeys[1][0] 
+                        noseChestY = ckeys[0][1] - ckeys[1][1]
                         chestRShoulderX = ckeys[2][0] - ckeys[1][0]
                         chestRShoulderY = ckeys[2][1] - ckeys[1][1]
+                        # now time compute similarity
+                        similarityNCRS = cosine_similarity([[noseChestX, noseChestY]],[[chestRShoulderX, chestRShoulderY]])
 
-                        # now time compute similatu
-                        similarity = cosine_similarity([chestNoseX, chestNoseY],[chestRShoulderX, chestRShoulderY])
-                        #nosechestRShoulder = cosine_similarity([ckeys[0],ckeys[1],ckeys[2]]) # compare similarity among these points
-                        #noseChestLShoulder = [0,1,5]
+                        # 0-1-5 Nose Chest LShoulder
+                        chestLShoulderX = ckeys[1][0] - ckeys[5][0]
+                        chestLShoulderY = ckeys[1][1] - ckeys[5][1]
+                        # now time compute similarity
+                        similarityNCLS = cosine_similarity([[noseChestX, noseChestY]],[[chestLShoulderX, chestLShoulderY]])
 
-                        
+                        # 4-3-2 Right arm
+                        handRElbowX = ckeys[4][0] - ckeys[3][0]
+                        handRElbowY = ckeys[4][1] - ckeys[3][1]
+                        elbowRShoulderX =ckeys[3][0] - ckeys[2][0]
+                        elbowRShoulderY=ckeys[3][1] - ckeys[2][1]
+                        # now time compute similarity
+                        similarityRA = cosine_similarity([[handRElbowX, handRElbowY]],[[elbowRShoulderX, elbowRShoulderY]])
+
+                        # 1-2-3 Chest - Rshoulder - elbow
+                        chestRShoulderX =   ckeys[1][0]- ckeys[2][0]
+                        chestRShoulderY =   ckeys[1][1] - ckeys[2][1]
+                        rShoulderRElbowX = ckeys[2][0] -ckeys[3][0]
+                        rShoulderRElbowY = ckeys[3][1] -ckeys[2][1]
+                        # now time compute similarity
+                        similarityCRSE = cosine_similarity([[chestRShoulderX, chestRShoulderY]],[[rShoulderRElbowX, rShoulderRElbowY]])
+
+                        # 0-1-8 NOSE-CHEST-HIP
+                        noseChestX =   ckeys[0][0]- ckeys[1][0]
+                        noseChestY =   ckeys[1][1] - ckeys[1][1]
+                        chestHipX = ckeys[1][0] -ckeys[8][0]
+                        chestHipY = ckeys[1][1] -ckeys[8][1]
+                        # now time compute similarity
+                        similarityNCH = cosine_similarity([[noseChestX, noseChestY]],[[chestHipX, chestHipY]])
+
+                        # 1-5-6 CHEST-lSHOULDER-ELBOW
+                        chestLShoulderX =   ckeys[1][0]- ckeys[5][0]
+                        chestLShoulderY =   ckeys[1][1] - ckeys[5][1]
+                        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
+                        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
+                        # now time compute similarity
+                        similarityCLSE = cosine_similarity([[chestLShoulderX, chestLShoulderY]],[[lShoulderLelbowX, lShoulderLelbowY]])
+
+                        # 5-6-7 Left Arm
+                        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
+                        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
+                        lElbowLHandX = ckeys[6][0] -ckeys[7][0]
+                        lElbowLHandY = ckeys[6][1] -ckeys[7][1]
+                        # now time compute similarity
+                        similarityLA = cosine_similarity([[lShoulderLelbowX, lShoulderLelbowY]],[[lElbowLHandX, lElbowLHandY]])
+
+                        # 0-15-17 Nose R-Eye R-Ear 
+                        noseREyeX = ckeys[0][0] -ckeys[9][0]
+                        noseREyeY = ckeys[0][1] -ckeys[9][1]
+                        rEyeREarX = ckeys[9][0] -ckeys[11][0]
+                        rEyeREarY = ckeys[9][1] -ckeys[11][1]
+                        # now time compute similarity
+                        similarityNRERE = cosine_similarity([[noseREyeX, noseREyeY]],[[rEyeREarX, rEyeREarY]])
+
+                        # 18-16-0 Nose L-Eye L-Ear 
+                        noseLEyeX = ckeys[0][0] -ckeys[10][0]
+                        noseLEyeY = ckeys[0][1] -ckeys[10][1]
+                        lEyeLEarX = ckeys[10][0] -ckeys[12][0]
+                        lEyeLEarY = ckeys[10][1] -ckeys[12][1]
+                        # now time compute similarity
+                        similarityNLELE = cosine_similarity([[noseLEyeX, noseLEyeY]],[[lEyeLEarX, lEyeLEarY]])
+
+                        # 1-0-15 Chest-Nose-REye
+                        chestNoseX = ckeys[1][0] -ckeys[0][0]
+                        chestNoseY = ckeys[1][1] -ckeys[0][1]
+                        noseREyeX = ckeys[0][0] -ckeys[9][0]
+                        noseREyeY = ckeys[0][1] -ckeys[9][1]
+                        # now time compute similarity
+                        similarityCNRE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseREyeX, noseREyeY]])
+
+                        # 1-0- 16 Chest-Nose-LEye
+                        chestNoseX = ckeys[1][0] -ckeys[0][0]
+                        chestNoseY = ckeys[1][1] -ckeys[0][1]
+                        noseLEyeX = ckeys[0][0] -ckeys[10][0]
+                        noseLEyeY = ckeys[0][1] -ckeys[10][1]
+                        # now time compute similarity
+                        similarityCNLE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseLEyeX, noseLEyeY]])
 
                         prevKey = ckeys
-                        print(ckeys)
-                        print(f'Distance: {i}: {distanc} \n')# \n\n Trunk: {trunc} \n\n Nose_Neck: {nose_neck}')
-                        print(f'Similarity: {i}: {similarity} \n')
+                        
+                        # resultVector = [format(similarityNCRS[0][0], '.3f'), format(similarityNCLS[0][0], '.3f') , format( similarityRA[0][0], '.3f') , format(similarityCRSE[0][0], '.3f'), format(similarityNCH[0][0], '.3f') , format(similarityCLSE[0][0], '.3f') , format(similarityLA[0][0], '.3f'), format(similarityNRERE[0][0], '.3f') , format(similarityNLELE[0][0], '.3f') , format(similarityCNRE[0][0], '.3f') , format(similarityCNLE[0][0], '.3f') ]
+                        resultVector = [(similarityNCRS[0][0]), (similarityNCLS[0][0]) , ( similarityRA[0][0]) , (similarityCRSE[0][0]), (similarityNCH[0][0]) , (similarityCLSE[0][0]) , (similarityLA[0][0]), (similarityNRERE[0][0]) , (similarityNLELE[0][0]) , (similarityCNRE[0][0]) , (similarityCNLE[0][0]) ]
+
+                        # print(ckeys)
+                        # print(f'Distance: {i}: {distanc} \n')# \n\n Trunk: {trunc} \n\n Nose_Neck: {nose_neck}')
+                        print(f"Similarity: {resultVector} \n")
+                        #print(f"Similarity: {format(similarityNCRS[0][0], '.3f')}")
+                       
                 totalCount.append(f'File: {each_json_dir} Counted: {counter} None: {counter_none}')    
                 print(totalCount)
-
 
     '''
     check if this list contains another list
