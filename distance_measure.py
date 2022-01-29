@@ -33,8 +33,102 @@ class distance_measure():
             except TypeError:
                 return sqrt( pow(x-y,2) )
     
-    def cosine_similarity(self, x, y):
-        return self
+    def cosine_JointAngles(self, ckeys):
+        #Computation of joint angle 
+        # 0-1-2 Nose Chest RShoulder
+        noseChestX = ckeys[0][0] - ckeys[1][0] 
+        noseChestY = ckeys[0][1] - ckeys[1][1]
+        chestRShoulderX = ckeys[2][0] - ckeys[1][0]
+        chestRShoulderY = ckeys[2][1] - ckeys[1][1]
+        # now time compute similarity
+        similarityNCRS = cosine_similarity([[noseChestX, noseChestY]],[[chestRShoulderX, chestRShoulderY]])
+        
+        # 0-1-5 Nose Chest LShoulder
+        chestLShoulderX = ckeys[1][0] - ckeys[5][0]
+        chestLShoulderY = ckeys[1][1] - ckeys[5][1]
+        # now time compute similarity
+        similarityNCLS = cosine_similarity([[noseChestX, noseChestY]],[[chestLShoulderX, chestLShoulderY]])
+
+        # 4-3-2 Right arm
+        handRElbowX = ckeys[4][0] - ckeys[3][0]
+        handRElbowY = ckeys[4][1] - ckeys[3][1]
+        elbowRShoulderX =ckeys[3][0] - ckeys[2][0]
+        elbowRShoulderY=ckeys[3][1] - ckeys[2][1]
+        # now time compute similarity
+        similarityRA = cosine_similarity([[handRElbowX, handRElbowY]],[[elbowRShoulderX, elbowRShoulderY]])
+
+        # 1-2-3 Chest - Rshoulder - elbow
+        chestRShoulderX =   ckeys[1][0]- ckeys[2][0]
+        chestRShoulderY =   ckeys[1][1] - ckeys[2][1]
+        rShoulderRElbowX = ckeys[2][0] -ckeys[3][0]
+        rShoulderRElbowY = ckeys[3][1] -ckeys[2][1]
+        # now time compute similarity
+        similarityCRSE = cosine_similarity([[chestRShoulderX, chestRShoulderY]],[[rShoulderRElbowX, rShoulderRElbowY]])
+
+        # 0-1-8 NOSE-CHEST-HIP
+        noseChestX =   ckeys[0][0]- ckeys[1][0]
+        noseChestY =   ckeys[1][1] - ckeys[1][1]
+        chestHipX = ckeys[1][0] -ckeys[8][0]
+        chestHipY = ckeys[1][1] -ckeys[8][1]
+        # now time compute similarity
+        similarityNCH = cosine_similarity([[noseChestX, noseChestY]],[[chestHipX, chestHipY]])
+
+        # 1-5-6 CHEST-lSHOULDER-ELBOW
+        chestLShoulderX =   ckeys[1][0]- ckeys[5][0]
+        chestLShoulderY =   ckeys[1][1] - ckeys[5][1]
+        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
+        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
+        # now time compute similarity
+        similarityCLSE = cosine_similarity([[chestLShoulderX, chestLShoulderY]],[[lShoulderLelbowX, lShoulderLelbowY]])
+
+        # 5-6-7 Left Arm
+        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
+        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
+        lElbowLHandX = ckeys[6][0] -ckeys[7][0]
+        lElbowLHandY = ckeys[6][1] -ckeys[7][1]
+        # now time compute similarity
+        similarityLA = cosine_similarity([[lShoulderLelbowX, lShoulderLelbowY]],[[lElbowLHandX, lElbowLHandY]])
+
+        # 0-15-17 Nose R-Eye R-Ear 
+        noseREyeX = ckeys[0][0] -ckeys[9][0]
+        noseREyeY = ckeys[0][1] -ckeys[9][1]
+        rEyeREarX = ckeys[9][0] -ckeys[11][0]
+        rEyeREarY = ckeys[9][1] -ckeys[11][1]
+        # now time compute similarity
+        similarityNRERE = cosine_similarity([[noseREyeX, noseREyeY]],[[rEyeREarX, rEyeREarY]])
+
+        # 18-16-0 Nose L-Eye L-Ear 
+        noseLEyeX = ckeys[0][0] -ckeys[10][0]
+        noseLEyeY = ckeys[0][1] -ckeys[10][1]
+        lEyeLEarX = ckeys[10][0] -ckeys[12][0]
+        lEyeLEarY = ckeys[10][1] -ckeys[12][1]
+        # now time compute similarity
+        similarityNLELE = cosine_similarity([[noseLEyeX, noseLEyeY]],[[lEyeLEarX, lEyeLEarY]])
+
+        # 1-0-15 Chest-Nose-REye
+        chestNoseX = ckeys[1][0] -ckeys[0][0]
+        chestNoseY = ckeys[1][1] -ckeys[0][1]
+        noseREyeX = ckeys[0][0] -ckeys[9][0]
+        noseREyeY = ckeys[0][1] -ckeys[9][1]
+        # now time compute similarity
+        similarityCNRE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseREyeX, noseREyeY]])
+
+        # 1-0- 16 Chest-Nose-LEye
+        chestNoseX = ckeys[1][0] -ckeys[0][0]
+        chestNoseY = ckeys[1][1] -ckeys[0][1]
+        noseLEyeX = ckeys[0][0] -ckeys[10][0]
+        noseLEyeY = ckeys[0][1] -ckeys[10][1]
+        # now time compute similarity
+        similarityCNLE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseLEyeX, noseLEyeY]])
+
+        #swap the values: Current key becomes previous key in the next iteration
+        prevKey = ckeys
+
+        
+        # concatinate all the similarity into a vector
+        resultVector = [(similarityNCRS[0][0]), (similarityNCLS[0][0]) , ( similarityRA[0][0]) , (similarityCRSE[0][0]), (similarityNCH[0][0]) , (similarityCLSE[0][0]) , (similarityLA[0][0]), (similarityNRERE[0][0]) , (similarityNLELE[0][0]) , (similarityCNRE[0][0]) , (similarityCNLE[0][0]) ]
+        
+        return resultVector
 
     '''
     Use this function returns the pose keypoints from JSON Dir
@@ -55,6 +149,7 @@ class distance_measure():
             
             for each_csv_file in list_csv:
                 i = 0
+                csv_row = 0
                 pTime = 0
                 if each_json_dir in each_csv_file:
                    # print(f'JSON: {each_json_dir} CSV: {each_csv_file}')
@@ -69,7 +164,8 @@ class distance_measure():
                     os.chdir(rootPath)
                     prevKey =[]
                     totalCount=[]
-                    duplicate =0
+                    col_begin = len(df.columns)
+                    df[col_begin] = np.nan
                     for eachJson in allJson:
                         json_filename = os.path.join(readJsonPath, str(df[0][i])+str(df[1][i])+'_keypoints.json') #2PpxiG0WU18900.1_keypoints
                         ############################
@@ -79,6 +175,9 @@ class distance_measure():
                         # y2 = y1+y2
                         normalization_value = self.euclidean_distance(poses[2:4], poses[16:18])
                         ckeys,trunc, nose_neck = self.get_pose_keypoint(poses, x1, x2, y1, y2 )
+                        
+                        # Set the dy_dx value to null so that we can fill it dynamically later
+                        dy_dy = None 
                         
                         #Produce coresponding frames
                         if(displayFrame):
@@ -98,6 +197,7 @@ class distance_measure():
 
                         if ckeys==[]:
                             counter_none = counter_none+1
+                            csv_row = csv_row+1
                             if(displayFrame):
                                 imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (255,255,0),5)
                                
@@ -165,11 +265,22 @@ class distance_measure():
                             pass
                         else:
                             prevKey = ckeys
+                        
+
+
+                        # compute the vertical difference in x and y for each keypoint
+                        if not nose_neck ==[]:
+                            normalized_prevKey = [[item/nose_neck for item in group] for group in prevKey if nose_neck!=0]
+                            normalized_cKey = [[item/nose_neck for item in group] for group in ckeys if nose_neck!=0]
+                            print(f'Normalized {normalized_prevKey}')
                             
-                        distanc = self.euclidean_distance( prevKey, ckeys)
+                            # Actually i intend to get the difference between each valu in y and x
+                            dy_dy = [[i - j for i, j in group] for group in zip(normalized_prevKey, normalized_cKey)] 
+                            print(f'\n\n Dy_Dx: {dy_dy} \n\n')
 
                         # diff bw hpose of chest and hpose of the nose
                         # also ned the vpose of nose and chest
+
                         '''
                         sample cKey 
                         [[349.893, 58.1082], [345.719, 95.0022], [316.998, 93.0292], 
@@ -178,104 +289,25 @@ class distance_measure():
                         [341.657, 55.9202], [353.923, 55.949], [333.435, 58.0131], 
                         [360.168, 58.0754]]
                         '''
-                        
                         #Computation of joint angle 
-                        # 0-1-2 Nose Chest RShoulder
-                        noseChestX = ckeys[0][0] - ckeys[1][0] 
-                        noseChestY = ckeys[0][1] - ckeys[1][1]
-                        chestRShoulderX = ckeys[2][0] - ckeys[1][0]
-                        chestRShoulderY = ckeys[2][1] - ckeys[1][1]
-                        # now time compute similarity
-                        similarityNCRS = cosine_similarity([[noseChestX, noseChestY]],[[chestRShoulderX, chestRShoulderY]])
+                        resultVector = self.cosine_JointAngles(ckeys)
 
-                        # 0-1-5 Nose Chest LShoulder
-                        chestLShoulderX = ckeys[1][0] - ckeys[5][0]
-                        chestLShoulderY = ckeys[1][1] - ckeys[5][1]
-                        # now time compute similarity
-                        similarityNCLS = cosine_similarity([[noseChestX, noseChestY]],[[chestLShoulderX, chestLShoulderY]])
-
-                        # 4-3-2 Right arm
-                        handRElbowX = ckeys[4][0] - ckeys[3][0]
-                        handRElbowY = ckeys[4][1] - ckeys[3][1]
-                        elbowRShoulderX =ckeys[3][0] - ckeys[2][0]
-                        elbowRShoulderY=ckeys[3][1] - ckeys[2][1]
-                        # now time compute similarity
-                        similarityRA = cosine_similarity([[handRElbowX, handRElbowY]],[[elbowRShoulderX, elbowRShoulderY]])
-
-                        # 1-2-3 Chest - Rshoulder - elbow
-                        chestRShoulderX =   ckeys[1][0]- ckeys[2][0]
-                        chestRShoulderY =   ckeys[1][1] - ckeys[2][1]
-                        rShoulderRElbowX = ckeys[2][0] -ckeys[3][0]
-                        rShoulderRElbowY = ckeys[3][1] -ckeys[2][1]
-                        # now time compute similarity
-                        similarityCRSE = cosine_similarity([[chestRShoulderX, chestRShoulderY]],[[rShoulderRElbowX, rShoulderRElbowY]])
-
-                        # 0-1-8 NOSE-CHEST-HIP
-                        noseChestX =   ckeys[0][0]- ckeys[1][0]
-                        noseChestY =   ckeys[1][1] - ckeys[1][1]
-                        chestHipX = ckeys[1][0] -ckeys[8][0]
-                        chestHipY = ckeys[1][1] -ckeys[8][1]
-                        # now time compute similarity
-                        similarityNCH = cosine_similarity([[noseChestX, noseChestY]],[[chestHipX, chestHipY]])
-
-                        # 1-5-6 CHEST-lSHOULDER-ELBOW
-                        chestLShoulderX =   ckeys[1][0]- ckeys[5][0]
-                        chestLShoulderY =   ckeys[1][1] - ckeys[5][1]
-                        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
-                        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
-                        # now time compute similarity
-                        similarityCLSE = cosine_similarity([[chestLShoulderX, chestLShoulderY]],[[lShoulderLelbowX, lShoulderLelbowY]])
-
-                        # 5-6-7 Left Arm
-                        lShoulderLelbowX = ckeys[5][0] -ckeys[6][0]
-                        lShoulderLelbowY = ckeys[5][1] -ckeys[6][1]
-                        lElbowLHandX = ckeys[6][0] -ckeys[7][0]
-                        lElbowLHandY = ckeys[6][1] -ckeys[7][1]
-                        # now time compute similarity
-                        similarityLA = cosine_similarity([[lShoulderLelbowX, lShoulderLelbowY]],[[lElbowLHandX, lElbowLHandY]])
-
-                        # 0-15-17 Nose R-Eye R-Ear 
-                        noseREyeX = ckeys[0][0] -ckeys[9][0]
-                        noseREyeY = ckeys[0][1] -ckeys[9][1]
-                        rEyeREarX = ckeys[9][0] -ckeys[11][0]
-                        rEyeREarY = ckeys[9][1] -ckeys[11][1]
-                        # now time compute similarity
-                        similarityNRERE = cosine_similarity([[noseREyeX, noseREyeY]],[[rEyeREarX, rEyeREarY]])
-
-                        # 18-16-0 Nose L-Eye L-Ear 
-                        noseLEyeX = ckeys[0][0] -ckeys[10][0]
-                        noseLEyeY = ckeys[0][1] -ckeys[10][1]
-                        lEyeLEarX = ckeys[10][0] -ckeys[12][0]
-                        lEyeLEarY = ckeys[10][1] -ckeys[12][1]
-                        # now time compute similarity
-                        similarityNLELE = cosine_similarity([[noseLEyeX, noseLEyeY]],[[lEyeLEarX, lEyeLEarY]])
-
-                        # 1-0-15 Chest-Nose-REye
-                        chestNoseX = ckeys[1][0] -ckeys[0][0]
-                        chestNoseY = ckeys[1][1] -ckeys[0][1]
-                        noseREyeX = ckeys[0][0] -ckeys[9][0]
-                        noseREyeY = ckeys[0][1] -ckeys[9][1]
-                        # now time compute similarity
-                        similarityCNRE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseREyeX, noseREyeY]])
-
-                        # 1-0- 16 Chest-Nose-LEye
-                        chestNoseX = ckeys[1][0] -ckeys[0][0]
-                        chestNoseY = ckeys[1][1] -ckeys[0][1]
-                        noseLEyeX = ckeys[0][0] -ckeys[10][0]
-                        noseLEyeY = ckeys[0][1] -ckeys[10][1]
-                        # now time compute similarity
-                        similarityCNLE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseLEyeX, noseLEyeY]])
-
+                        #swap the values: Current key becomes previous key in the next iteration
                         prevKey = ckeys
-                        
-                        # resultVector = [format(similarityNCRS[0][0], '.3f'), format(similarityNCLS[0][0], '.3f') , format( similarityRA[0][0], '.3f') , format(similarityCRSE[0][0], '.3f'), format(similarityNCH[0][0], '.3f') , format(similarityCLSE[0][0], '.3f') , format(similarityLA[0][0], '.3f'), format(similarityNRERE[0][0], '.3f') , format(similarityNLELE[0][0], '.3f') , format(similarityCNRE[0][0], '.3f') , format(similarityCNLE[0][0], '.3f') ]
-                        resultVector = [(similarityNCRS[0][0]), (similarityNCLS[0][0]) , ( similarityRA[0][0]) , (similarityCRSE[0][0]), (similarityNCH[0][0]) , (similarityCLSE[0][0]) , (similarityLA[0][0]), (similarityNRERE[0][0]) , (similarityNLELE[0][0]) , (similarityCNRE[0][0]) , (similarityCNLE[0][0]) ]
 
-                        # print(ckeys)
-                        # print(f'Distance: {i}: {distanc} \n')# \n\n Trunk: {trunc} \n\n Nose_Neck: {nose_neck}')
+                        #flatten dy_dy
+                        dy_dy = [i for subi in dy_dy for i in subi]
+                        
+                        # concatinate all the similarity into a vector
+                        resultVector.append(dy_dy)
+                        
                         print(f"Similarity: {resultVector} \n")
-                        #print(f"Similarity: {format(similarityNCRS[0][0], '.3f')}")
-                       
+                        
+                        #Add to the end of the coloumn
+                        df.iloc[csv_row, col_begin] = pd.DataFrame([resultVector])
+                        csv_row = csv_row+1
+                    #Save the CSV in the end
+                    df.to_csv(each_csv_file, index=False,  header=False)
                 totalCount.append(f'File: {each_json_dir} Counted: {counter} None: {counter_none}')    
                 print(totalCount)
 
