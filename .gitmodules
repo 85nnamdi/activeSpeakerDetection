@@ -1,0 +1,3 @@
+[submodule "asc"]
+	path = asc
+	url = https://github.com/fuankarion/active-speakers-context.git
