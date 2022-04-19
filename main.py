@@ -14,13 +14,13 @@ Base_train_url ='https://s3.amazonaws.com/ava-dataset/trainval/'
 
 txtvideoSet = 'dataset/ava_speech_file_names_v1.txt'
 jsonPath = 'dataset/json/'
-csvDir = 'dataset/csv/train/'
+csvDir = 'D:\\Users\\Nnamdi\\University of Hamburg\\SoSe2021\\Thesis\\activeSpeakerDetection\\dataset\\STE_Forward\\valT'#'dataset/csv/train/'
 videos = 'dataset/videos/'
 
 def main():
-    # # 1 Download videos
-    # videoFile = VideoData(txtvideoSet, Base_train_url)
-    # videoFile.download()
+    # 1 Download videos
+    videoFile = VideoData(txtvideoSet, Base_train_url)
+    videoFile.download()
 
     util = Utilities()
     rootPath = os.getcwd()
@@ -40,20 +40,21 @@ def main():
                 with concurrent.futures.ProcessPoolExecutor() as executor:
                     executor.submit(util.saveFrame, each_video_file, each_csv_file)
 
-    # # 3 Save keypoint using openpose
-    # dirpath = 'dataset/frames/'
-    # dir = util.readDir(dirpath)
-    # for d in dir[0]:
-    #     framePath = os.path.join(dirpath,d)
-    #     output_path =d
-    #     with concurrent.futures.ProcessPoolExecutor() as executor:
-    #         executor.submit(util.callOpenPose, frames_path ='../'+framePath, output_path='../dataset/json/'+output_path)
+    # 3 Save keypoint using openpose
+    dirpath = 'dataset/frames/val/'
+    dir = util.readDir(dirpath)
+    for d in dir[0]:
+        framePath = os.path.join(dirpath,d)
+        output_path =d
+        util.callOpenPose(oppath ="openpose/",frames_path ='../'+framePath, output_path='../dataset/json/'+output_path+'/val')
+        # # with concurrent.futures.ProcessPoolExecutor() as executor:
+        #     executor.submit(util.callOpenPose, frames_path ='../'+framePath+'/val', output_path='../dataset/json/'+output_path)
 
     # # 4. Save the video dimensions
-    # util.save_width_height(csvDir, videos)
+    util.save_width_height(csvDir, videos)
     
-    # # 5. keypoints to CSV
-    # util.keyPointToCSV(csvDir=csvDir, jsonDir=jsonPath)
+    # 5. keypoints to CSV
+    util.keyPointToCSV(csvDir=csvDir, jsonDir=jsonPath)
 
 if __name__ == '__main__':
     start = perf_counter()
