@@ -212,7 +212,7 @@ class Utilities():
     This function reads a csv files, extracts frame number, passes the number to the readVideoFrames fucntions
     and saves the returned frame as image.jpg
     '''        
-    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/', extension='.jpg'):
+    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/val/', extension='.jpg'):
         # read the excel file
         df = pd.read_csv(csv_file, header=None)
 
@@ -246,7 +246,7 @@ class Utilities():
     '''
     Function to call open pose.exe from located in ./openpose/bin and passing all the required parameters along
     '''
-    def callOpenPose(self, oppath ="openpose/", frames_path="../dataset/frames/new/", output_path="../dataset/Json/"):
+    def callOpenPose(self, oppath ="openpose/", frames_path="../dataset/frames/new/", output_path="../dataset/Json/val/"):
         oldpath = os.getcwd()
         os.chdir(oppath)
         #get the current path

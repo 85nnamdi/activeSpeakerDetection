@@ -134,7 +134,7 @@ class distance_measure():
     Use this function returns the pose keypoints from JSON Dir
     '''
     def calculate_distance(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/', displayFrame =False):
-        frameDir = 'dataset/frames/'
+        frameDir = 'dataset/frames/val/'
         rootPath = os.getcwd()
         # For each CSV file in this folder loop
         list_csv  = self.util.readFiles(basePath = csvDir, fileExtention='.csv')
@@ -266,8 +266,6 @@ class distance_measure():
                         else:
                             prevKey = ckeys
                         
-
-
                         # compute the vertical difference in x and y for each keypoint
                         if not nose_neck ==[]:
                             normalized_prevKey = [[item/nose_neck for item in group] for group in prevKey if nose_neck!=0]
@@ -299,12 +297,12 @@ class distance_measure():
                         dy_dy = [i for subi in dy_dy for i in subi]
                         
                         # concatinate all the similarity into a vector
-                        resultVector.append(dy_dy)
+                        resultVector.extend(dy_dy)
                         
                         print(f"Similarity: {resultVector} \n")
                         
                         #Add to the end of the coloumn
-                        df.iloc[csv_row, col_begin] = pd.DataFrame([resultVector])
+                        df.iloc[csv_row, col_begin] = str(resultVector)#pd.DataFrame([resultVector])
                         csv_row = csv_row+1
                     #Save the CSV in the end
                     df.to_csv(each_csv_file, index=False,  header=False)
@@ -368,8 +366,8 @@ class distance_measure():
 if __name__ == '__main__':
     start = perf_counter()
 
-    jsonPath = 'dataset/json/'
-    csvDir = 'dataset/csv/train/'
+    jsonPath = 'dataset/json/val/'
+    csvDir = 'dataset/STE_Forward/valT/'#'dataset/csv/train/'
     
     distance_measure().calculate_distance(csvDir, jsonPath, displayFrame=True)
     
