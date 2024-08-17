@@ -11,6 +11,10 @@ openpose/
 data_preparation/__pycache__/
 venv/
 dataset/
+model/runs
+dataset/
+asc/
+run/
 
 # C extensions
 *.so

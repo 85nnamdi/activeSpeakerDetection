@@ -5,10 +5,9 @@ import numpy as np
 import pandas as pd
 import json
 from datetime import datetime
-
-
 import subprocess
 import shlex
+
 '''
 Initial pose constants
 '''
@@ -52,7 +51,6 @@ class Utilities():
 
     '''
     reads all keypoints into a single list
-    
     '''
     def readKeypoints2(self,pathToJsonFile):
         '''
@@ -71,8 +69,6 @@ class Utilities():
                     faceList.append(face[i*3]), faceList.append(face[i*3+1])
                 
         return poseList, faceList
-
-     
 
     '''
     Use this function to fill all CSVs with keypoints
@@ -107,7 +103,6 @@ class Utilities():
                         # save and repeat
                         csv_row = csv_row+1
                     df.to_csv(each_csv_file, index=False,  header=False)
-
 
     '''
     Given a frame number, this function returns frames from the video
@@ -160,8 +155,6 @@ class Utilities():
                         # csv_row = csv_row+1
                     df.to_csv(each_csv_file, index=False,  header=False)
 
-
-
     '''
     Saves the cropped image
     '''
@@ -212,7 +205,7 @@ class Utilities():
     This function reads a csv files, extracts frame number, passes the number to the readVideoFrames fucntions
     and saves the returned frame as image.jpg
     '''        
-    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/val/', extension='.jpg'):
+    def saveFrame(self, video_name, csv_file, path_to_savedFrame = 'dataset/frames/demo/', extension='.jpg'):
         # read the excel file
         df = pd.read_csv(csv_file, header=None)
 
@@ -246,7 +239,7 @@ class Utilities():
     '''
     Function to call open pose.exe from located in ./openpose/bin and passing all the required parameters along
     '''
-    def callOpenPose(self, oppath ="openpose/", frames_path="../dataset/frames/new/", output_path="../dataset/Json/val/"):
+    def callOpenPose(self, oppath ="openpose/", frames_path="../dataset/frames/new/", output_path="../dataset/Json/demo/"):
         oldpath = os.getcwd()
         os.chdir(oppath)
         #get the current path

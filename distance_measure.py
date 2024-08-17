@@ -1,18 +1,15 @@
-import csv
+import cv2
 import os
-import sys
 import time
 from math import *
 from time import perf_counter
 
-import cv2
 import numpy as np
 import pandas as pd
-from scipy import spatial  # consider remove
 from sklearn.metrics.pairwise import cosine_similarity  # currently used
-
+import math
 from utility import Utilities
-
+from tqdm import tqdm
 
 class distance_measure():
     def __init__(self):
@@ -34,8 +31,12 @@ class distance_measure():
                 return sqrt( pow(x-y,2) )
     
     def cosine_JointAngles(self, ckeys):
+        print("================")
+       
         #Computation of joint angle 
         # 0-1-2 Nose Chest RShoulder
+        print(f'Nose: {ckeys[0][0]}')
+        print(f'Chest: {ckeys[1][0]}')
         noseChestX = ckeys[0][0] - ckeys[1][0] 
         noseChestY = ckeys[0][1] - ckeys[1][1]
         chestRShoulderX = ckeys[2][0] - ckeys[1][0]
@@ -120,10 +121,6 @@ class distance_measure():
         noseLEyeY = ckeys[0][1] -ckeys[10][1]
         # now time compute similarity
         similarityCNLE = cosine_similarity([[chestNoseX, chestNoseY]],[[noseLEyeX, noseLEyeY]])
-
-        #swap the values: Current key becomes previous key in the next iteration
-        prevKey = ckeys
-
         
         # concatinate all the similarity into a vector
         resultVector = [(similarityNCRS[0][0]), (similarityNCLS[0][0]) , ( similarityRA[0][0]) , (similarityCRSE[0][0]), (similarityNCH[0][0]) , (similarityCLSE[0][0]) , (similarityLA[0][0]), (similarityNRERE[0][0]) , (similarityNLELE[0][0]) , (similarityCNRE[0][0]) , (similarityCNLE[0][0]) ]
@@ -131,10 +128,10 @@ class distance_measure():
         return resultVector
 
     '''
-    Use this function returns the pose keypoints from JSON Dir
+    This function returns the pose keypoints from JSON Dir
     '''
-    def calculate_distance(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/', displayFrame =False):
-        frameDir = 'dataset/frames/val/'
+    def calculate_distance(self, csvDir='dataset/csv/train/', jsonDir='dataset/Json/', frameDir='', displayFrame =False):
+        result=[]
         rootPath = os.getcwd()
         # For each CSV file in this folder loop
         list_csv  = self.util.readFiles(basePath = csvDir, fileExtention='.csv')
@@ -145,6 +142,7 @@ class distance_measure():
         counter_none =0
         for each_json_dir in root_json_dir[0]:
             readJsonPath = os.path.join(jsonDir, each_json_dir)
+            
            # print(f'Old json: {readJsonPath}')
             
             for each_csv_file in list_csv:
@@ -152,8 +150,6 @@ class distance_measure():
                 csv_row = 0
                 pTime = 0
                 if each_json_dir in each_csv_file:
-                   # print(f'JSON: {each_json_dir} CSV: {each_csv_file}')
-                    
                     # open csv
                     df = pd.read_csv(each_csv_file, header=None)
                     df.sort_values(1, ascending=True, inplace=True) 
@@ -166,20 +162,32 @@ class distance_measure():
                     totalCount=[]
                     col_begin = len(df.columns)
                     df[col_begin] = np.nan
-                    for eachJson in allJson:
+                    number_of_mismatchedSimilarity=0
+
+                    for eachJson in tqdm(allJson):
                         json_filename = os.path.join(readJsonPath, str(df[0][i])+str(df[1][i])+'_keypoints.json') #2PpxiG0WU18900.1_keypoints
+                        result.append(eachJson)
                         ############################
                         poses, _face = self.util.readKeypoints(json_filename)
                         x1, y1, x2, y2 = float(df[2][i])*width, float(df[3][i])*height, float(df[4][i])*width, float(df[5][i])*height                    
-                        # x2 = x1+x2
-                        # y2 = y1+y2
+                        ##########################
+                        ########################################################################################
+                        # We need to compute the diagonal of the bounding box
+                        # This is because we need to replace the nose_neck distance with this diagonal. 
+                        # We use this diagonal to account for cases where the nose_neck distance is unavailable.
+                        #         Diagonal of a rectangle is defined as diagonal = √(a² + b²)
+                        #         where a and b are the sides of the rectangle
+                        #       https://www.omnicalculator.com/math/square-diagonal
+                        #########################################################################################
+                        diagonal = self.compute_diagonal(x1,x2, y1,y2)
+                        print(f'Diagonal: {diagonal}')
                         normalization_value = self.euclidean_distance(poses[2:4], poses[16:18])
-                        ckeys,trunc, nose_neck = self.get_pose_keypoint(poses, x1, x2, y1, y2 )
+                        ckeys,_, _ = self.get_pose_keypoint(poses, x1, x2, y1, y2 )
                         
                         # Set the dy_dx value to null so that we can fill it dynamically later
-                        dy_dy = None 
+                        dy_dx = None 
                         
-                        #Produce coresponding frames
+                        # Produce coresponding frames
                         if(displayFrame):
                             framePath = os.path.join(frameDir, each_json_dir)
                             framePath = framePath + '/'+ str(df[0][i])+str(df[1][i]) + '.jpg'
@@ -194,36 +202,40 @@ class distance_measure():
                                 frame = cv2.imread(framePath)
                         else:
                             i+=1
-
+                        
+                        # Produce bounding box
                         if ckeys==[]:
                             counter_none = counter_none+1
                             csv_row = csv_row+1
                             if(displayFrame):
-                                imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (255,255,0),5)
+                                print('')
+                                # frame = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (255,255,0),10)
                                
                             continue    
                         
                         else:
                             counter =counter+1
                             if(displayFrame):
-                                imgbbox = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2), int(y2)), (0,255,0),2)
+                                # frame = cv2.rectangle(frame, (int(x1),int(y1)), (int(x2), int(y2)), (0,255,0),6)
                                 
+                                # Print circles
                                 if not (ckeys[0].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[0][0]), int(ckeys[0][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[1].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[1][0]), int(ckeys[1][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[9].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[9][0]), int(ckeys[9][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[10].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[10][0]), int(ckeys[10][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[10][0]), int(ckeys[10][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[2].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[2][0]), int(ckeys[2][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[2][0]), int(ckeys[2][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[5].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[5][0]), int(ckeys[5][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[5][0]), int(ckeys[5][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[4].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[4][0]), int(ckeys[4][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[4][0]), int(ckeys[4][1])),5, (255, 255, 0), cv2.FILLED)
                                 if not (ckeys[7].__contains__(0)):
-                                    cv2.circle(frame, (int(ckeys[7][0]), int(ckeys[7][1])),3, (255, 255, 0), cv2.FILLED)
+                                    cv2.circle(frame, (int(ckeys[7][0]), int(ckeys[7][1])),5, (255, 255, 0), cv2.FILLED)
+                                # =======================    
                                 # if not (ckeys[6].__contains__(0)):
                                 #     cv2.circle(frame, (int(ckeys[6][0]), int(ckeys[6][1])),3, (255, 255, 0), cv2.FILLED)
                                 # if not (ckeys[3].__contains__(0)):
@@ -231,82 +243,79 @@ class distance_measure():
                                 
                                 # Connect the dots
                                 if not (ckeys[0].__contains__(0) or ckeys[1].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[0][0]), int(ckeys[0][1])), (int(ckeys[1][0]), int(ckeys[1][1])),(255, 100, 50), 7)
                                 if not (ckeys[11].__contains__(0) or ckeys[9].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[11][0]), int(ckeys[11][1])), (int(ckeys[9][0]), int(ckeys[9][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[11][0]), int(ckeys[11][1])), (int(ckeys[9][0]), int(ckeys[9][1])),(255, 100, 50), 7)
                                 if not (ckeys[9].__contains__(0) or ckeys[0].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[9][0]), int(ckeys[9][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 7)
                                 if not (ckeys[10].__contains__(0) or ckeys[0].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[10][0]), int(ckeys[10][1])), (int(ckeys[0][0]), int(ckeys[0][1])),(255, 100, 50), 7)
                                 if not (ckeys[12].__contains__(0) or ckeys[10].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[12][0]), int(ckeys[12][1])), (int(ckeys[10][0]), int(ckeys[10][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[12][0]), int(ckeys[12][1])), (int(ckeys[10][0]), int(ckeys[10][1])),(255, 100, 50), 7)
                                 if not (ckeys[2].__contains__(0) or ckeys[5].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[5][0]), int(ckeys[5][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[5][0]), int(ckeys[5][1])),(255, 100, 50), 7)
                                 if not (ckeys[2].__contains__(0) or ckeys[4].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[4][0]), int(ckeys[4][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[2][0]), int(ckeys[2][1])), (int(ckeys[4][0]), int(ckeys[4][1])),(255, 100, 50), 7)
                                 if not (ckeys[5].__contains__(0) or ckeys[7].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[5][0]), int(ckeys[5][1])), (int(ckeys[7][0]), int(ckeys[7][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[5][0]), int(ckeys[5][1])), (int(ckeys[7][0]), int(ckeys[7][1])),(255, 100, 50), 7)
                                 if not (ckeys[1].__contains__(0) or ckeys[8].__contains__(0)):
-                                    cv2.line(frame, (int(ckeys[1][0]), int(ckeys[1][1])), (int(ckeys[8][0]), int(ckeys[8][1])),(255, 100, 50), 2)
+                                    cv2.line(frame, (int(ckeys[1][0]), int(ckeys[1][1])), (int(ckeys[8][0]), int(ckeys[8][1])),(255, 100, 50), 7)
                                 
 
                                 cTime = time.time()
                                 fps = 1 / (cTime - pTime)
                                 pTime = cTime
-                                cv2.putText(imgbbox, "fps: "+str(int(fps)), (10, 50), cv2.FONT_HERSHEY_PLAIN, 1, (155, 200, 150), 2)
-                                cv2.imshow('Active speacker detection using pose estimation', imgbbox)
+                                cv2.putText(frame, "fps: "+str(int(fps)), (10, 50), cv2.FONT_HERSHEY_PLAIN, 1, (155, 200, 150), 2)
+                                cv2.imshow('Active speacker detection using pose estimation', frame)
                                 
-                                if cv2.waitKey(1) == ord('s'):
-                                    
-                                    fullpath = os.path.join(frameDir, 'samples', str(df[0][i])+str(df[1][i]) + '.jpg')
-                                    cv2.imwrite(fullpath, imgbbox)
+                                if cv2.waitKey(5) == ord('s'):
+                                    fullpath = os.path.join(frameDir, 'samples/'+ str(df[0][i])+str(df[1][i]) + '.jpg')
+                                    cv2.imwrite(fullpath, frame)
+                                    #print(f'Image saved: {fullpath}')
 
                         if len(prevKey):
                             pass
                         else:
                             prevKey = ckeys
-                        
+                        # Image saved: dataset/frames/demo/samples\7YpF6DntOYw900.52.jpg
                         # compute the vertical difference in x and y for each keypoint
-                        if not nose_neck ==[]:
-                            normalized_prevKey = [[item/nose_neck for item in group] for group in prevKey if nose_neck!=0]
-                            normalized_cKey = [[item/nose_neck for item in group] for group in ckeys if nose_neck!=0]
-                            print(f'Normalized {normalized_prevKey}')
-                            
-                            # Actually i intend to get the difference between each valu in y and x
-                            dy_dy = [[i - j for i, j in group] for group in zip(normalized_prevKey, normalized_cKey)] 
-                            print(f'\n\n Dy_Dx: {dy_dy} \n\n')
+                        # if not nose_neck ==[]:
+                        # normalized_prevKey = [[item/nose_neck for item in group] for group in prevKey if nose_neck!=0]
+                        # normalized_cKey = [[item/nose_neck for item in group] for group in ckeys if nose_neck!=0]
+                        normalized_prevKey = [[item/diagonal for item in group] for group in prevKey if diagonal!=0]
+                        normalized_cKey = [[item/diagonal for item in group] for group in ckeys if diagonal!=0]
+                        #print(f'Normalized {normalized_prevKey}')
+                        #print(f'CKey {ckeys}')
+                        
+                        # Actually i intend to compute the difference between each valu in y and x in the previous frame and current frame
+                        dy_dx = [[i - j for i, j in group] for group in zip(normalized_prevKey, normalized_cKey)]
+                        print(f'Dy_DX: {dy_dx}')
 
                         # diff bw hpose of chest and hpose of the nose
                         # also ned the vpose of nose and chest
 
-                        '''
-                        sample cKey 
-                        [[349.893, 58.1082], [345.719, 95.0022], [316.998, 93.0292], 
-                        [304.644, 140.261], [335.41, 152.553], [372.445, 95.0825], 
-                        [395.077, 138.258], [372.507, 154.561], [345.772, 189.608], 
-                        [341.657, 55.9202], [353.923, 55.949], [333.435, 58.0131], 
-                        [360.168, 58.0754]]
-                        '''
                         #Computation of joint angle 
-                        resultVector = self.cosine_JointAngles(ckeys)
+                        resultVector = self.cosine_JointAngles(normalized_cKey)
 
                         #swap the values: Current key becomes previous key in the next iteration
                         prevKey = ckeys
 
-                        #flatten dy_dy
-                        dy_dy = [i for subi in dy_dy for i in subi]
+                        #flatten dy_dx
+                        dy_dx_flat = [i for subi in dy_dx for i in subi]
                         
                         # concatinate all the similarity into a vector
-                        resultVector.extend(dy_dy)
-                        
-                        print(f"Similarity: {resultVector} \n")
+                        resultVector.extend(dy_dx_flat)
+                        if(len(resultVector)<37):
+                            resultVector.extend(([0]* (37-len(resultVector)) ))
+                            #print(f"Similarity: {len(resultVector)} \n")
                         
                         #Add to the end of the coloumn
                         df.iloc[csv_row, col_begin] = str(resultVector)#pd.DataFrame([resultVector])
                         csv_row = csv_row+1
                     #Save the CSV in the end
                     df.to_csv(each_csv_file, index=False,  header=False)
-                totalCount.append(f'File: {each_json_dir} Counted: {counter} None: {counter_none}')    
+                totalCount.append(f'File: {each_json_dir} Counted: {counter} None: {counter_none}')   
+                print(f'Mismatched similarity: {number_of_mismatchedSimilarity}') 
                 print(totalCount)
 
     '''
@@ -317,6 +326,18 @@ class distance_measure():
             if isinstance(element, list) == True:
                 return True
 
+    def compute_diagonal(self, x1, x2, y1, y2):
+        ########################################################################################
+        # We need to compute the diagonal of the bounding box
+        # THis is because we need to replace the nose_neck distance with this diagonal. 
+        # We use this diagonal to account for cases where the nose_neck distance is unavailable.
+        #         Diagonal of a rectangle is defined as diagonal = √(a² + b²)
+        #         where a and b are the sides of the rectangle
+        #       https://www.omnicalculator.com/math/square-diagonal
+        #########################################################################################
+        horizontal_side = x2-x1
+        verical_side = y2-y1
+        return math.sqrt(math.pow(horizontal_side,2) + math.pow(verical_side,2))
 
     '''  
     Each time you pass in the pose read from csv, this function should return the
@@ -366,10 +387,10 @@ class distance_measure():
 if __name__ == '__main__':
     start = perf_counter()
 
-    jsonPath = 'dataset/json/val/'
-    csvDir = 'dataset/STE_Forward/valT/'#'dataset/csv/train/'
-    
-    distance_measure().calculate_distance(csvDir, jsonPath, displayFrame=True)
+    jsonPath = 'dataset/json/demo/'
+    csvDir = 'dataset/csv/demo/' #'dataset/STE_Forward/val_pose/'#'dataset/csv/train/'
+    frameDir = 'dataset/frames/demo/'
+    distance_measure().calculate_distance(csvDir, jsonPath, frameDir, displayFrame=True)
     
     end = perf_counter()
     print ('Total processing time : ',end - start)
