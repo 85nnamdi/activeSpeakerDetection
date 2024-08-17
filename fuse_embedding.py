@@ -37,37 +37,25 @@ class DataProcessing():
                     data_ste = sorted(csv_f2, key=operator.itemgetter(1)) 
                     targetDir = os.path.join(self.currentdir, targetDir)
                     
-                    with open(os.path.join(targetDir, ste_csv_name+'-augumented3.csv'), mode='w', newline='', encoding='utf-8') as f:
+                    with open(os.path.join(targetDir, ste_csv_name+'-augumented.csv'), mode='w', newline='', encoding='utf-8') as f:
                         f_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                         for row_pose, row_ste in zip_longest(data_pose, data_ste):
-                            # merge_list =[]
+                            
                             merge_list =[]
-                            merged_for_writing = np.array([])
                             try:
                                 merge_list.extend(ast.literal_eval(row_ste[6])) 
                                 merge_list.extend(ast.literal_eval(row_pose[10]))
-                                # ste_embeding =ast.literal_eval(row_ste[6])
-                                # pose_embeding =np.array(ast.literal_eval(row_pose[10])).resize((512,))
-                                
-                                # merged_ = np.append(merge_list, ste_embeding ,0)
-                                # merged_for_writing = np.append(merged_, pose_embeding ,0)
-                                
-                                # print(len(merged_for_writing))
                             except:
                                 merge_list.extend(([0]*37))
-                                # merged_for_writing = np.append(merge_list, [],0)
-                                # merged_for_writing.resize((512,))
-                                # print(len(merged_for_writing))
                          
                             f_writer.writerow( [row_ste[0], row_ste[1], row_ste[2], row_ste[3], row_ste[4], row_ste[5], merge_list] )
                     
                     f_ste.close()
-                            
-                        
+                                                    
 if __name__ == '__main__':
     
     ste_foward = 'dataset/STE_Forward/val/'
-    pose_csv = 'dataset/STE_Forward/val_Pose/'
+    pose_csv = 'dataset/STE_Forward/val_Pose/'#'dataset/csv/train/'
     asc_input = 'dataset/ASC_Input/val_fused/'
     startProcessing = DataProcessing()
     startProcessing.generatecsv(pose_csv, ste_foward, asc_input)

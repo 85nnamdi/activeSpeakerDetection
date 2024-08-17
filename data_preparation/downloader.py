@@ -8,7 +8,7 @@ class VideoData():
         self.dataset = dataset
         
 
-    def download(self):
+    def download(self,output_folder):
         chunk_size =256
 
         # Read the text file to find filename which has to be downloaded
@@ -24,7 +24,7 @@ class VideoData():
                 
                 r = requests.get(url_download, stream=True)
 
-                with open("dataset/videos/"+line_striped, "wb") as f:
+                with open(output_folder+line_striped, "wb") as f:
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                     count=count+1
